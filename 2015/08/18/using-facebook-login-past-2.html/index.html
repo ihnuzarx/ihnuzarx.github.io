@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="shortcut icon" href="/images/icon.ico">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="gooner blog">
+  <meta name="author" content="ihnuzarx">
+
+  <title> Using facebook login Past2 (Implement) </title>
+
+  <!-- Bootstrap Core CSS -->
+  <link href="/stylesheets/bootstrap.min.css" rel="stylesheet" type="text/css" />
+
+  <!-- Custom CSS -->
+  <link href="/stylesheets/main.css" rel="stylesheet" type="text/css" />
+  <link href="/stylesheets/clean-blog.min.css" rel="stylesheet" type="text/css" />
+  <link href="/stylesheets/syntax.css" rel="stylesheet" type="text/css" />
+
+  <!-- Custom Fonts -->
+  <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+  <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+  <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+  <![endif]-->
+
+</head>
+
+
+<body>
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header page-scroll">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <!-- <a class="navbar-brand" href="/">Start Bootstrap</a> -->
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+          <a href="/">Home</a>
+        </li>
+        <li>
+          <a href="/about/">About</a>
+        </li>
+      </ul>
+    </div>
+    <!-- /.navbar-collapse -->
+  </div>
+  <!-- /.container -->
+</nav>
+
+
+      <!-- Page Header -->
+<!-- Set your background image for this header on the line below. -->
+<header class="intro-header" style="background-image:url(''); background-color:#8b9dc3">
+  <!-- '/images/post-bg.jpg' -->
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="post-heading">
+          <h1>Using facebook login Past2 (Implement)</h1>
+          <!--<h2 class="subheading">Problems look mighty small from 150 miles up</h2> -->
+          <span class="meta">Posted by <a href="/">GoonerDev</a> on August 18, 2015</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+
+<article>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <p>จากบทความที่แล้ว เราติดตั้ง Facebook SDK เรียบร้อยแล้ว ตอนนี้เราจะมาดูวิธีการ implement facebook login กัน <a href="https://developers.facebook.com/docs/facebook-login/android/v2.4">Facebook Login</a></p>
+
+<h3 id="section">เริ่มกันเลย</h3>
+<p><img alt="" title="facebook implement" src="/images/2015-08-18/facebook-login/6.png" /></p>
+
+<p>มีสองวิธีครับ นั่นคือ ผ่าน LoginManager Class โดยเราจะต้องผูกอีเวนท์เอง ว่าจะเรียกใช้ตอนไหน และผ่าน LoginButton Class ก็คือจะเป็น UI Button ข้างในก็จะรวมคลาส LoginManager ไว้แล้ว บทความนี้เราจะใช้ LoginButton Class กัน</p>
+
+<h3 id="xml-section-">XML Section นะจ๊ะ</h3>
+<p>สร้าง LoginButton บน layout ของ Activity หรือ Fragment ก็ได้เลย</p>
+
+<pre><code>&lt;com.facebook.login.widget.LoginButton
+    android:id="@+id/login_button"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_horizontal"
+    android:layout_marginTop="30dp"
+    android:layout_marginBottom="30dp" /&gt;
+</code></pre>
+
+<p>จากนั้น ไปเพิ่ม internet permission ใน <code>AndroidManifest.xml</code> กันก่อน</p>
+
+<pre><code>&lt;uses-permission android:name="android.permission.INTERNET" /&gt;
+</code></pre>
+
+<p>ใส่ meta data ภายใน tag application</p>
+
+<pre><code>&lt;meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/&gt;
+</code></pre>
+
+<p>app_id ก็คือ app id ที่เราลงทะเบียนไว้กับ <a href="https://developers.facebook.com/apps/">facebook developer</a> นั่นละ
+<img alt="" title="app id" src="/images/2015-08-18/facebook-login/7.png" />
+สำคัญคือ ต้องใส่ app id ไว้ใน string resource เท่านั้นนะ</p>
+
+<p>สำหรับ facebook sdk version4 นี้ เราต้อง register facebook activity ด้วย</p>
+
+<pre><code>&lt;activity android:name="com.facebook.FacebookActivity"
+    android:theme="@android:style/Theme.Translucent.NoTitleBar"
+    android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+    android:label="@string/app_name" /&gt;
+</code></pre>
+
+<h3 id="java-section-">Java Section บ้าง</h3>
+<p>เสร็จขั้นตอน บนไฟล์ xml กันแล้ว เราจำเป็นต้อง initialize sdk ก่อนนะ โดยใส่<code>FacebookSdk.sdkInitialize(getApplicationContext());</code> ไว้ก่อนก่อน <code>setContentView</code></p>
+
+<pre><code>@Override
+protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    FacebookSdk.sdkInitialize(getApplicationContext());
+    setContentView(R.layout.activity_main);
+
+    callbackManager = CallbackManager.Factory.create();
+    LoginButton loginButton = (LoginButton)findViewById(R.id.login_button);
+    // loginButton.setFragment(this);
+    // Callback registration
+    loginButton.registerCallback(callbackManager, new FacebookCallback&lt;LoginResult&gt;() {...}
+}
+@Override
+protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    super.onActivityResult(requestCode, resultCode, data);
+    callbackManager.onActivityResult(requestCode, resultCode, data);
+}
+</code></pre>
+
+<p>หากว่าเราใช้ปุ่ม บน fragment ต้องเพิ่ม <code>loginButton.setFragment(this);</code> ด้วยนะ (ครั้งนี้เราใช้บน Activity)</p>
+
+<p>เพื่อจัดการ callback ต่างๆ facebook มี class <code>CallbackManager</code> มาให้แล้ว เราเพียงต้อง override onActivityResult เพิ่อใช้งาน ก็เท่านั้นเอง</p>
+
+<p>เสร็จแล้ว ลองรันดูซักรอบ</p>
+
+<p><img alt="" title="facebook button" width="250px" src="/images/2015-08-18/facebook-login/8.jpg" />
+ได้ปุ่มมาละ</p>
+
+<h3 id="section-1">เก็บเกี่ยวข้อมูล</h3>
+<p>ต่อมาเราจะทำการ track profile เพื่อรับข้อมูล public มาใช้กัน โดย facebook มี class ProfileTracker มาให้แล้ว  วิธีใช้ก็แค่ สร้าง instance มันขึ้นมา</p>
+
+<pre><code>profileTracker = new ProfileTracker() {
+    @Override
+    protected void onCurrentProfileChanged(
+              Profile oldProfile,
+              Profile currentProfile) {
+          setProfile(currentProfile);
+    }
+};
+
+private void setProfile(Profile profile) {
+    Toast.makeText(MainActivity.this, "profile name : " + profile.getName(), Toast.LENGTH_LONG).show();
+}
+</code></pre>
+
+<p>เพื่อให้หยุด track อย่างสมบูรณ์ แอพไม่พัง เราต้องไปสั่งให้หยุด ตอน onDestroy ด้วย</p>
+
+<pre><code>@Override
+public void onDestroy() {
+    super.onDestroy();
+    profileTracker.stopTracking();
+}
+</code></pre>
+
+<h3 id="section-2">สรุป</h3>
+<p>จบ คร่าวๆก็ทำนองนี้ละนะ ลำดับขึ้นตอนทั้งหมดคือ</p>
+
+<p>สร้างแอพบน facebook ลงทะเบียน package name ของเรา ใส่ key hashes  เรียบร้อย ได้ app id มา เก็บไว้</p>
+
+<p>ติดตั้ง Facebook SDK บนโปรเจค เรียกใช้งาน LoginManager Class จะโดยผ่าน UI เราเอง แล้วไปผูกเอา หรือจะ ผ่าน LoginButton Class ของ facebook ซึ่งผูกไว้ให้แล้ว</p>
+
+<p>track ข้อมูลต่างๆ เอามาใช้งานได้ตามลำบาก ตรงนี้ก็เชค event กันไป เช่น login logout หรือ ให้สิทธิ์ หรือ ไม่ให้ อะไรก็ว่ากันไป</p>
+
+<p>โค้ดโปรเจค บน <a href="https://github.com/ihnuzarx/login-with-facebook">Github</a></p>
+
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+        <ul class="post-tag"><strong>TAGS</strong>
+          <li><a href="/tags/android/">#android</a></li>
+          <li><a href="/tags/login/">#login</a></li>
+          <li><a href="/tags/facebook-login/">#facebook-login</a></li>
+          <li><a href="/tags/facebook button.html">#facebook button</a></li>
+        </ul>
+
+      </div>
+    </div>
+  </div>
+</article>
+
+
+    <!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <ul class="list-inline text-center">
+          <li>
+            <a href="/">
+              <span class="fa-stack fa-lg">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+              </span>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.facebook.com/ihnu.zarx">
+              <span class="fa-stack fa-lg">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+              </span>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/ihnuzarx">
+              <span class="fa-stack fa-lg">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+              </span>
+            </a>
+          </li>
+        </ul>
+        <p class="copyright text-muted">Copyright &copy; Your Website 2014</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- All JavaScript files go here -->
+
+<!-- jQuery -->
+<script src="/javascripts/jquery.js" type="text/javascript"></script>
+<!-- Bootstrap Core JavaScript -->
+<script src="/javascripts/bootstrap.min.js" type="text/javascript"></script>
+<!-- Custom Theme JavaScript -->
+<script src="/javascripts/clean-blog.min.js" type="text/javascript"></script>
+<!-- Google Analytics -->
+<script src="/javascripts/analyticstracking.js" type="text/javascript"></script>
+
+
+</body>
+
+</html>

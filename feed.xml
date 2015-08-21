@@ -5,16 +5,195 @@
   <id>http://blog.url.com/</id>
   <link href="http://blog.url.com/"/>
   <link href="http://blog.url.com/feed.xml" rel="self"/>
-  <updated>2015-07-24T01:49:00+07:00</updated>
+  <updated>2015-08-18T18:45:00+07:00</updated>
   <author>
     <name>Blog Author</name>
   </author>
+  <entry>
+    <title>Using facebook login Past2 (Implement)</title>
+    <link rel="alternate" href="http://blog.url.com/2015/08/18/using-facebook-login-past-2.html/"/>
+    <id>http://blog.url.com/2015/08/18/using-facebook-login-past-2.html/</id>
+    <published>2015-08-18T18:45:00+07:00</published>
+    <updated>2015-08-21T22:48:46+07:00</updated>
+    <author>
+      <name>Article Author</name>
+    </author>
+    <content type="html">&lt;p&gt;จากบทความที่แล้ว เราติดตั้ง Facebook SDK เรียบร้อยแล้ว ตอนนี้เราจะมาดูวิธีการ implement facebook login กัน &lt;a href="https://developers.facebook.com/docs/facebook-login/android/v2.4"&gt;Facebook Login&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id="section"&gt;เริ่มกันเลย&lt;/h3&gt;
+&lt;p&gt;&lt;img alt="" title="facebook implement" src="/images/2015-08-18/facebook-login/6.png" /&gt;&lt;/p&gt;
+
+&lt;p&gt;มีสองวิธีครับ นั่นคือ ผ่าน LoginManager Class โดยเราจะต้องผูกอีเวนท์เอง ว่าจะเรียกใช้ตอนไหน และผ่าน LoginButton Class ก็คือจะเป็น UI Button ข้างในก็จะรวมคลาส LoginManager ไว้แล้ว บทความนี้เราจะใช้ LoginButton Class กัน&lt;/p&gt;
+
+&lt;h3 id="xml-section-"&gt;XML Section นะจ๊ะ&lt;/h3&gt;
+&lt;p&gt;สร้าง LoginButton บน layout ของ Activity หรือ Fragment ก็ได้เลย&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;com.facebook.login.widget.LoginButton
+    android:id="@+id/login_button"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_horizontal"
+    android:layout_marginTop="30dp"
+    android:layout_marginBottom="30dp" /&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;จากนั้น ไปเพิ่ม internet permission ใน &lt;code&gt;AndroidManifest.xml&lt;/code&gt; กันก่อน&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;uses-permission android:name="android.permission.INTERNET" /&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;ใส่ meta data ภายใน tag application&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;app_id ก็คือ app id ที่เราลงทะเบียนไว้กับ &lt;a href="https://developers.facebook.com/apps/"&gt;facebook developer&lt;/a&gt; นั่นละ
+&lt;img alt="" title="app id" src="/images/2015-08-18/facebook-login/7.png" /&gt;
+สำคัญคือ ต้องใส่ app id ไว้ใน string resource เท่านั้นนะ&lt;/p&gt;
+
+&lt;p&gt;สำหรับ facebook sdk version4 นี้ เราต้อง register facebook activity ด้วย&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;activity android:name="com.facebook.FacebookActivity"
+    android:theme="@android:style/Theme.Translucent.NoTitleBar"
+    android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+    android:label="@string/app_name" /&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id="java-section-"&gt;Java Section บ้าง&lt;/h3&gt;
+&lt;p&gt;เสร็จขั้นตอน บนไฟล์ xml กันแล้ว เราจำเป็นต้อง initialize sdk ก่อนนะ โดยใส่&lt;code&gt;FacebookSdk.sdkInitialize(getApplicationContext());&lt;/code&gt; ไว้ก่อนก่อน &lt;code&gt;setContentView&lt;/code&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;@Override
+protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    FacebookSdk.sdkInitialize(getApplicationContext());
+    setContentView(R.layout.activity_main);
+
+    callbackManager = CallbackManager.Factory.create();
+    LoginButton loginButton = (LoginButton)findViewById(R.id.login_button);
+    // loginButton.setFragment(this);
+    // Callback registration
+    loginButton.registerCallback(callbackManager, new FacebookCallback&amp;lt;LoginResult&amp;gt;() {...}
+}
+@Override
+protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    super.onActivityResult(requestCode, resultCode, data);
+    callbackManager.onActivityResult(requestCode, resultCode, data);
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;หากว่าเราใช้ปุ่ม บน fragment ต้องเพิ่ม &lt;code&gt;loginButton.setFragment(this);&lt;/code&gt; ด้วยนะ (ครั้งนี้เราใช้บน Activity)&lt;/p&gt;
+
+&lt;p&gt;เพื่อจัดการ callback ต่างๆ facebook มี class &lt;code&gt;CallbackManager&lt;/code&gt; มาให้แล้ว เราเพียงต้อง override onActivityResult เพิ่อใช้งาน ก็เท่านั้นเอง&lt;/p&gt;
+
+&lt;p&gt;เสร็จแล้ว ลองรันดูซักรอบ&lt;/p&gt;
+
+&lt;p&gt;&lt;img alt="" title="facebook button" width="250px" src="/images/2015-08-18/facebook-login/8.jpg" /&gt;
+ได้ปุ่มมาละ&lt;/p&gt;
+
+&lt;h3 id="section-1"&gt;เก็บเกี่ยวข้อมูล&lt;/h3&gt;
+&lt;p&gt;ต่อมาเราจะทำการ track profile เพื่อรับข้อมูล public มาใช้กัน โดย facebook มี class ProfileTracker มาให้แล้ว  วิธีใช้ก็แค่ สร้าง instance มันขึ้นมา&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;profileTracker = new ProfileTracker() {
+    @Override
+    protected void onCurrentProfileChanged(
+              Profile oldProfile,
+              Profile currentProfile) {
+          setProfile(currentProfile);
+    }
+};
+
+private void setProfile(Profile profile) {
+    Toast.makeText(MainActivity.this, "profile name : " + profile.getName(), Toast.LENGTH_LONG).show();
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;เพื่อให้หยุด track อย่างสมบูรณ์ แอพไม่พัง เราต้องไปสั่งให้หยุด ตอน onDestroy ด้วย&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;@Override
+public void onDestroy() {
+    super.onDestroy();
+    profileTracker.stopTracking();
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id="section-2"&gt;สรุป&lt;/h3&gt;
+&lt;p&gt;จบ คร่าวๆก็ทำนองนี้ละนะ ลำดับขึ้นตอนทั้งหมดคือ&lt;/p&gt;
+
+&lt;p&gt;สร้างแอพบน facebook ลงทะเบียน package name ของเรา ใส่ key hashes  เรียบร้อย ได้ app id มา เก็บไว้&lt;/p&gt;
+
+&lt;p&gt;ติดตั้ง Facebook SDK บนโปรเจค เรียกใช้งาน LoginManager Class จะโดยผ่าน UI เราเอง แล้วไปผูกเอา หรือจะ ผ่าน LoginButton Class ของ facebook ซึ่งผูกไว้ให้แล้ว&lt;/p&gt;
+
+&lt;p&gt;track ข้อมูลต่างๆ เอามาใช้งานได้ตามลำบาก ตรงนี้ก็เชค event กันไป เช่น login logout หรือ ให้สิทธิ์ หรือ ไม่ให้ อะไรก็ว่ากันไป&lt;/p&gt;
+
+&lt;p&gt;โค้ดโปรเจค บน &lt;a href="https://github.com/ihnuzarx/login-with-facebook"&gt;Github&lt;/a&gt;&lt;/p&gt;
+</content>
+  </entry>
+  <entry>
+    <title>Using facebook login Past1 (ติดตั้ง SDK)</title>
+    <link rel="alternate" href="http://blog.url.com/2015/08/18/using-facebook-login-past-1.html/"/>
+    <id>http://blog.url.com/2015/08/18/using-facebook-login-past-1.html/</id>
+    <published>2015-08-18T17:11:00+07:00</published>
+    <updated>2015-08-21T22:48:41+07:00</updated>
+    <author>
+      <name>Article Author</name>
+    </author>
+    <content type="html">&lt;p&gt;ลองเล่น Facebook SDK ตัวล่าสุด ซึ่งตอนนี้กลายเป็น version4 ไปเรียบร้อยโรงเรียนมาร์คซะแล้ว ก็เลยต้องมารื้อฟื้นปัดฝุ่นความรู้ตัวเราเองซะหน่อย&lt;/p&gt;
+
+&lt;p&gt;จะช้าอยู่ใย เข้าไปที่ &lt;a href="https://developers.facebook.com/"&gt;developers.facebook.com&lt;/a&gt;
+แล้วก็ลองสร้างแอพใหม่ซะหน่อย ซึ่งก็แน่นอน android แอพพะย่ะค่ะ ใส่ชื่อแอพ เลือกหมวดหมู่ แล้วก็กด Create App ID เบาๆไปหนึ่งที&lt;/p&gt;
+
+&lt;p&gt;มาถึงหน้า download sdk แหล่มเลย มีstepมาให้เราด้วย ว่าต้องทำอะไรยังไง… ครับ จะรอใครมาตัดเค้กเปิดงานหรือไง เริ่มเลยสิครับ&lt;/p&gt;
+
+&lt;h2 id="download-the-facebook-sdk-for-android"&gt;Download the Facebook SDK for Android&lt;/h2&gt;
+&lt;p&gt;ขั้นแรก facebook แนะนำให้ download facebook sdk มาก่อน แต่ว่าเราใช้ andrid studio ก็เลยไปโหลดจาก dependency ดีกว่า ชีวิตดี&lt;/p&gt;
+
+&lt;h2 id="install-facebook-on-your-emulator"&gt;Install Facebook on Your Emulator&lt;/h2&gt;
+&lt;p&gt;&lt;img alt="" title="sdk download" src="/images/2015-08-18/facebook-login/1.png" /&gt;
+การที่เราจะใช้ facebook login ได้ เราก็ต้องมีแอพ facebook ในเครื่องก่อนใช่มั๊ยล่ะ ถ้าเราใช้ real device ก็คงจะมีติดกันไว้แล้วละ
+ใครยังไม่มีก็ไปโหลดมาซะ ส่วนถ้าใครใช้ emultor ต่างๆก็ต้องโหลดตัว APK มาติดตั้งก่อนนะ ซึ่ง facebook ก็มีให้โหลดพร้อมวิธีติดตั้งในหน้านั้นเลย&lt;/p&gt;
+
+&lt;h2 id="add-facebook-sdk-to-your-project"&gt;Add Facebook SDK to Your Project&lt;/h2&gt;
+&lt;p&gt;หลังจากมีแอพ facebook กันแล้ว เราจะเพิ่ม Facebook SDK ลงในโปรเจคเรา ผ่าน dependency ถ้าเรายังไม่มีโปรเจคก็ทำการสร้างขึ้นมาก่อนนะ โดย min sdk คือ 9(android 2.3)
+เมื่อมีโปรเจคแล้ว ก็เปิดไฟล์ build.gradle ของ app มาบัดเดี๋ยวนี้&lt;/p&gt;
+
+&lt;p&gt;เพิ่มคำสั่ง
+&lt;code&gt;repositories { mavenCentral() }&lt;/code&gt; ก่อนคำสั่ง dependencies นะครับ เพื่อบอกว่าเราจะดึง library มาจาก maven central นั่นเอง
+หากสนใจเรื่องการ add library ต่างศึกษาต่อได้จาก &lt;a href="http://www.akexorcist.com/2014/12/android-studio-dependencies-library.html"&gt;บล็อกนี้&lt;/a&gt; ซึ่งเป็นของคุณเอกครับ&lt;/p&gt;
+
+&lt;p&gt;จากนั้นก็เพิ่มคำสั่ง &lt;code&gt;compile 'com.facebook.android:facebook-android-sdk:4.0.0'&lt;/code&gt; ลงใน dependencies
+แล้วก็ทำการ Sync gradle ซะ
+&lt;img alt="" title="dependencies" src="/images/2015-08-18/facebook-login/2.png" /&gt;&lt;/p&gt;
+
+&lt;h2 id="tell-us-about-your-android-project"&gt;Tell us about your Android project&lt;/h2&gt;
+&lt;p&gt;กลับมาที่ facebook quick start จะให้ใส่ package name และ default activity class name ซึ่ง default activity class name ถ้าดูใน &lt;code&gt;AndroidManifest.xml&lt;/code&gt; ก็คือ Activity ที่เป็นตัว android.intent.action.MAIN นั่นละจ้ะ&lt;/p&gt;
+
+&lt;p&gt;เรียบร้อยก็ Next&lt;/p&gt;
+
+&lt;h2 id="add-your-development-and-release-key-hashes"&gt;Add your development and release key hashes&lt;/h2&gt;
+&lt;p&gt;ต่อมา facebook จะถามถึงตัว key hashes ของเรา เพื่อใช้สำหรับการ authen ระหว่างแอพเรากับ facebook&lt;/p&gt;
+
+&lt;p&gt;เราจะสร้าง Key Hashes บน command ครับ โดยรันคำสั่งดังนี้&lt;/p&gt;
+
+&lt;h4 id="mac"&gt;Mac&lt;/h4&gt;
+&lt;pre&gt;&lt;code&gt;keytool -exportcert -alias androiddebugkey -keystore ~/.android/debug.keystore | openssl sha1 -binary | openssl base64
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id="windows"&gt;Windows&lt;/h4&gt;
+&lt;pre&gt;&lt;code&gt;keytool -exportcert -alias androiddebugkey -keystore %HOMEPATH%\.android\debug.keystore | openssl sha1 -binary | openssl base64
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;โดยตรง path สำหรับ keytore ตอนนี้เป็นตัว debug นะ ใช้สำหรับทดสอบได้ แต่ถ้าเราอัพขึ้น production หรือ playstore
+จะใช้ไม่ได้นะ ก่อนอัพก็อย่าลืม ไปเปลี่ยนก่อนล่ะ โดยใช้ keystore ตัวที่เราใช้อัพขึ้น production แล้วก็เอาไปใส่แทนใน setting ของแอพเราบน facebook&lt;/p&gt;
+
+&lt;p&gt;เอาละ ติดตั้ง Facebook SDK กันเรียบร้อย พร้อมใช้งานละ แต่รู้สึกว่าจะยาวละ ต่อที่บทความที่สองดีกว่า&lt;/p&gt;
+</content>
+  </entry>
   <entry>
     <title>Font size บน android ทำไมต้องใช้หน่วย sp</title>
     <link rel="alternate" href="http://blog.url.com/2015/07/23/sp-unit-in-android-font-size.html/"/>
     <id>http://blog.url.com/2015/07/23/sp-unit-in-android-font-size.html/</id>
     <published>2015-07-24T01:49:00+07:00</published>
-    <updated>2015-08-15T22:36:59+07:00</updated>
+    <updated>2015-08-21T22:48:38+07:00</updated>
     <author>
       <name>Article Author</name>
     </author>
